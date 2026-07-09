@@ -7,7 +7,7 @@
 
 const CONFIG = {
     difficulty: "easy",     // "easy", "normal", "hard"
-    level: 1,                 // 1 to 19
+    level: 1,                 // -6 (Level 0: Twists) or 1 to 19
     weapons: {
         blaster: true,        // always present
         shotgun: true,
@@ -127,6 +127,13 @@ function decode(pw) {
 
 function generatePassword(config) {
     const payload = new Uint8Array(10);
+    let level = config.level;
+    if (level === undefined) level = 1;
+    if (level !== -6 && (level < 1 || level > 19)) {
+        const clampedLevel = Math.min(19, Math.max(1, level));
+        console.warn(`[Warning] Level ${level} is out of bounds. Clamped to ${clampedLevel}.`);
+        level = clampedLevel;
+    }
 
     // Clamp health, maxHealth and armor to Quake II N64 physical bitstream limits
     let health = config.currentHealth || 100;
@@ -185,7 +192,7 @@ function generatePassword(config) {
     }
 
     // 1. Level Index (0..4): level + 9
-    writeBits(payload, config.level + 9, 0, 4);
+    writeBits(payload, level + 9, 0, 4);
 
     // 2. Difficulty (5..6): easy=0, normal=1, hard=2
     const diffVal = config.difficulty === "easy" ? 0 : (config.difficulty === "normal" ? 1 : 2);

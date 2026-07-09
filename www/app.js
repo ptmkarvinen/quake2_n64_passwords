@@ -126,6 +126,11 @@ function decode(pw) {
 
 function generatePassword(config) {
     const payload = new Uint8Array(10);
+    let level = config.level;
+    if (level === undefined) level = 1;
+    if (level !== -6 && (level < 1 || level > 19)) {
+        level = Math.min(19, Math.max(1, level));
+    }
 
     // Clamp health, maxHealth and armor to Quake II N64 physical bitstream limits
     let health = config.currentHealth || 100;
@@ -175,7 +180,7 @@ function generatePassword(config) {
     }
 
     // 1. Level Index (0..4): level + 9
-    writeBits(payload, config.level + 9, 0, 4);
+    writeBits(payload, level + 9, 0, 4);
 
     // 2. Difficulty (5..6): easy=0, normal=1, hard=2
     const diffVal = config.difficulty === "easy" ? 0 : (config.difficulty === "normal" ? 1 : 2);
@@ -547,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // 1. Level Index (0..4): level + 9
             const rawLvl = readBits(decPayload, 0, 4);
             const levelVal = rawLvl - 9;
-            if (levelVal >= 1 && levelVal <= 19) {
+            if ((levelVal >= 1 && levelVal <= 19) || levelVal === -6) {
                 elLevel.value = levelVal;
             }
 
