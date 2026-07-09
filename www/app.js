@@ -138,6 +138,10 @@ function generatePassword(config) {
         maxHealth = Math.min(115, Math.max(100, maxHealth));
     }
 
+    if (health > maxHealth) {
+        health = maxHealth;
+    }
+
     // Determine armor type first to clamp armor value correctly
     let armorType = 0;
     let armor = config.armor || 0;
@@ -372,6 +376,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     bindRange(elCurrentHealth, elCurrentHealthVal);
     bindRange(elMaxHealth, elMaxHealthVal);
+    elMaxHealth.addEventListener("input", () => {
+        updateHealthLimits();
+    });
     bindRange(elArmor, elArmorVal);
 
     Object.keys(elAmmo).forEach(k => {
@@ -404,6 +411,17 @@ document.addEventListener("DOMContentLoaded", () => {
         elArmorVal.textContent = elArmor.value;
         updateUI();
     });
+
+    // Dynamic limit for current health based on max health
+    function updateHealthLimits() {
+        const maxHp = parseInt(elMaxHealth.value) || 100;
+        const prevVal = parseInt(elCurrentHealth.value) || 0;
+        elCurrentHealth.max = maxHp;
+        if (prevVal > maxHp) {
+            elCurrentHealth.value = maxHp;
+        }
+        elCurrentHealthVal.textContent = elCurrentHealth.value;
+    }
 
     // Dynamic limits for ammo based on backpack checkbox
     function updateAmmoSlidersLimit() {
@@ -561,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const maxHpVal = maxHpOffset + 100;
             elMaxHealth.value = maxHpVal;
             elMaxHealthVal.textContent = maxHpVal;
+            updateHealthLimits();
 
             // 7. Armor Type (28..29)
             const armorTypeVal = readBits(decPayload, 28, 29);
@@ -620,5 +639,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize state
     updateAmmoSlidersLimit();
+    updateHealthLimits();
     updateUI();
 });

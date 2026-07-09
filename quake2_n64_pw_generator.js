@@ -143,6 +143,11 @@ function generatePassword(config) {
         maxHealth = clampedMaxHealth;
     }
 
+    if (health > maxHealth) {
+        console.warn(`[Warning] Health ${health} exceeds Max Health ${maxHealth}. Clamped to ${maxHealth}.`);
+        health = maxHealth;
+    }
+
     // Determine armor type first to clamp armor value correctly
     let armorType = 0;
     let armor = config.armor || 0;
