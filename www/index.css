@@ -520,6 +520,30 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #38a169;
 }
 
+.feedback-msg.warning {
+    color: #dd6b20;
+}
+
+/* Out of Bounds fields validation warning states */
+.field.out-of-bounds select {
+    border-color: var(--accent-red) !important;
+    box-shadow: 
+        0 0 12px rgba(229, 62, 62, 0.7),
+        0 0 4px rgba(229, 62, 62, 0.4) !important;
+}
+
+.field.out-of-bounds input[type="range"] {
+    background: rgba(229, 62, 62, 0.3) !important;
+    box-shadow: 0 0 10px rgba(229, 62, 62, 0.4) !important;
+}
+
+.field.out-of-bounds label span.hud-num {
+    color: var(--accent-red) !important;
+    text-shadow: 
+        0 0 6px rgba(229, 62, 62, 0.9),
+        0 0 12px rgba(229, 62, 62, 0.6) !important;
+}
+
 /* Footer HUD Style */
 footer {
     text-align: center;

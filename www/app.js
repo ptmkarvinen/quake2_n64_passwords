@@ -374,15 +374,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle range updates
     function bindRange(slider, labelEl) {
         slider.addEventListener("input", () => {
+            slider.closest(".field").classList.remove("out-of-bounds");
             labelEl.textContent = slider.value;
             updateUI();
         });
     }
 
     bindRange(elCurrentHealth, elCurrentHealthVal);
-    bindRange(elMaxHealth, elMaxHealthVal);
     elMaxHealth.addEventListener("input", () => {
+        elMaxHealth.closest(".field").classList.remove("out-of-bounds");
+        elCurrentHealth.closest(".field").classList.remove("out-of-bounds");
+        elMaxHealthVal.textContent = elMaxHealth.value;
         updateHealthLimits();
+        updateUI();
     });
     bindRange(elArmor, elArmorVal);
 
@@ -392,6 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle armor limits based on type selection
     elArmorType.addEventListener("change", () => {
+        elArmorType.closest(".field").classList.remove("out-of-bounds");
+        elArmor.closest(".field").classList.remove("out-of-bounds");
         const type = elArmorType.value;
         if (type === "none") {
             elArmor.value = 0;
@@ -453,9 +459,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Handle select and checkbox updates
-    elLevel.addEventListener("change", updateUI);
-    elDifficulty.addEventListener("change", updateUI);
+    elLevel.addEventListener("change", () => {
+        elLevel.closest(".field").classList.remove("out-of-bounds");
+        updateUI();
+    });
+    elDifficulty.addEventListener("change", () => {
+        elDifficulty.closest(".field").classList.remove("out-of-bounds");
+        updateUI();
+    });
     elBackpack.addEventListener("change", () => {
+        Object.keys(elAmmo).forEach(k => {
+            elAmmo[k].closest(".field").classList.remove("out-of-bounds");
+        });
         updateAmmoSlidersLimit();
         updateUI();
     });
@@ -484,6 +499,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle dynamic passcode decryption input
     elDecryptInput.addEventListener("input", () => {
+        // Clear previous warning indicators
+        document.querySelectorAll(".field.out-of-bounds").forEach(f => f.classList.remove("out-of-bounds"));
         let rawVal = elDecryptInput.value.replace(/\s+/g, "").toUpperCase();
 
         // Auto-format with spaces while typing
@@ -548,17 +565,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Sync controls!
+            let hasWarnings = false;
 
             // 1. Level Index (0..4): level + 9
             const rawLvl = readBits(decPayload, 0, 4);
             const levelVal = rawLvl - 9;
             if ((levelVal >= 1 && levelVal <= 19) || levelVal === -6) {
                 elLevel.value = levelVal;
+            } else {
+                hasWarnings = true;
+                elLevel.closest(".field").classList.add("out-of-bounds");
             }
 
             // 2. Difficulty (5..6)
             const rawDiff = readBits(decPayload, 5, 6);
-            elDifficulty.value = rawDiff === 0 ? "easy" : (rawDiff === 1 ? "normal" : "hard");
+            if (rawDiff >= 0 && rawDiff <= 2) {
+                elDifficulty.value = rawDiff === 0 ? "easy" : (rawDiff === 1 ? "normal" : "hard");
+            } else {
+                hasWarnings = true;
+                elDifficulty.closest(".field").classList.add("out-of-bounds");
+                elDifficulty.value = "normal";
+            }
 
             // 3. Weapons (7..15)
             elWps.shotgun.checked = readBits(decPayload, 7, 7) === 1;
@@ -574,22 +601,42 @@ document.addEventListener("DOMContentLoaded", () => {
             // 4. Backpack (16)
             elBackpack.checked = readBits(decPayload, 16, 16) === 1;
 
-            // 5. Health (17..23)
-            const hpVal = readBits(decPayload, 17, 23);
-            elCurrentHealth.value = hpVal;
-            elCurrentHealthVal.textContent = hpVal;
-
-            // 6. Max Health (24..27)
+            // 6. Max Health (24..27) - Read first so we can bound check current health
             const maxHpOffset = readBits(decPayload, 24, 27);
             const maxHpVal = maxHpOffset + 100;
-            elMaxHealth.value = maxHpVal;
-            elMaxHealthVal.textContent = maxHpVal;
+            if (maxHpVal >= 100 && maxHpVal <= 115) {
+                elMaxHealth.value = maxHpVal;
+                elMaxHealthVal.textContent = maxHpVal;
+            } else {
+                hasWarnings = true;
+                elMaxHealth.closest(".field").classList.add("out-of-bounds");
+                elMaxHealth.value = 100;
+                elMaxHealthVal.textContent = 100;
+            }
             updateHealthLimits();
+
+            // 5. Health (17..23)
+            const hpVal = readBits(decPayload, 17, 23);
+            const currentMaxLimit = parseInt(elMaxHealth.value) || 100;
+            if (hpVal >= 1 && hpVal <= currentMaxLimit) {
+                elCurrentHealth.value = hpVal;
+                elCurrentHealthVal.textContent = hpVal;
+            } else {
+                hasWarnings = true;
+                elCurrentHealth.closest(".field").classList.add("out-of-bounds");
+                elCurrentHealth.value = Math.min(currentMaxLimit, Math.max(1, hpVal));
+                elCurrentHealthVal.textContent = elCurrentHealth.value;
+            }
 
             // 7. Armor Type (28..29)
             const armorTypeVal = readBits(decPayload, 28, 29);
             const typeNames = ["none", "jacket", "combat", "body"];
-            elArmorType.value = typeNames[armorTypeVal];
+            const resolvedType = typeNames[armorTypeVal] || "none";
+            if (armorTypeVal > 3) {
+                hasWarnings = true;
+                elArmorType.closest(".field").classList.add("out-of-bounds");
+            }
+            elArmorType.value = resolvedType;
 
             // Re-trigger the armor type change manually to update max slider limits
             const type = elArmorType.value;
@@ -610,8 +657,18 @@ document.addEventListener("DOMContentLoaded", () => {
             // 8. Armor Value (30..35): value * 5
             const armOffset = readBits(decPayload, 30, 35);
             const armVal = armOffset * 5;
-            elArmor.value = armVal;
-            elArmorVal.textContent = armVal;
+            if (type === "none" && armVal > 0) {
+                hasWarnings = true;
+                elArmor.closest(".field").classList.add("out-of-bounds");
+                elArmor.value = 0;
+            } else if (armVal > parseInt(elArmor.max)) {
+                hasWarnings = true;
+                elArmor.closest(".field").classList.add("out-of-bounds");
+                elArmor.value = elArmor.max;
+            } else {
+                elArmor.value = armVal;
+            }
+            elArmorVal.textContent = elArmor.value;
 
             // 9. Ammo Sliders
             updateAmmoSlidersLimit(); // Redefine ammo limits first based on backpack state
@@ -626,13 +683,25 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             Object.keys(elAmmo).forEach(k => {
-                elAmmo[k].value = ammoVals[k];
-                elAmmoVals[k].textContent = ammoVals[k];
+                const limit = parseInt(elAmmo[k].max) || 0;
+                if (ammoVals[k] > limit) {
+                    hasWarnings = true;
+                    elAmmo[k].closest(".field").classList.add("out-of-bounds");
+                    elAmmo[k].value = limit;
+                } else {
+                    elAmmo[k].value = ammoVals[k];
+                }
+                elAmmoVals[k].textContent = elAmmo[k].value;
             });
 
-            // Display Success Feedback!
-            elDecryptFeedback.textContent = "PASSCODE SUCCESSFULLY DECRYPTED & SYNCED";
-            elDecryptFeedback.className = "feedback-msg success";
+            // Display Success / Warning Feedback!
+            if (hasWarnings) {
+                elDecryptFeedback.textContent = "DECRYPTED WITH WARNINGS (SOME VALUES OUT OF BOUNDS)";
+                elDecryptFeedback.className = "feedback-msg warning";
+            } else {
+                elDecryptFeedback.textContent = "PASSCODE SUCCESSFULLY DECRYPTED & SYNCED";
+                elDecryptFeedback.className = "feedback-msg success";
+            }
 
             // Run standard UI update to sync passcode visual block and decrypted data buffer values
             updateUI();
