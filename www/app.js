@@ -154,16 +154,16 @@ function generatePassword(config) {
     if (armor > 0) {
         const typeOverride = (config.armorType || "").toLowerCase();
         if (typeOverride === "body") {
-            armorType = 3;
+            armorType = 1;
         } else if (typeOverride === "combat") {
             armorType = 2;
         } else if (typeOverride === "jacket") {
-            armorType = 1;
+            armorType = 3;
         } else {
             // Auto-detect based on armor value
-            if (armor > 150) armorType = 1;      // Jacket Armor (up to 250)
+            if (armor > 150) armorType = 1;      // Body Armor (up to 250)
             else if (armor > 100) armorType = 2; // Combat Armor (up to 150)
-            else armorType = 3;                  // Body Armor (up to 100)
+            else armorType = 3;                  // Jacket Armor (up to 100)
         }
 
         // Clamp armor based on armor type limits
@@ -403,13 +403,13 @@ document.addEventListener("DOMContentLoaded", () => {
             elArmor.value = 0;
             elArmor.max = 0;
             elArmor.disabled = true;
-        } else if (type === "jacket") {
+        } else if (type === "body") {
             elArmor.max = 250;
             elArmor.disabled = false;
         } else if (type === "combat") {
             elArmor.max = 150;
             elArmor.disabled = false;
-        } else if (type === "body") {
+        } else if (type === "jacket") {
             elArmor.max = 100;
             elArmor.disabled = false;
         }
