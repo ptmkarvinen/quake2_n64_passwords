@@ -2,6 +2,8 @@
 
 Password generator and decrypter for Quake II on the Nintendo 64.
 
+🌐 Live web application: [quake2.zx497.com](https://quake2.zx497.com/)
+
 This project was built with a lot of assistance from **Gemini**.
 
 ## What Gemini thinks we did:
@@ -13,7 +15,7 @@ This project was built with a lot of assistance from **Gemini**.
 
 ## What I actually did:
 
-I loaded the Quake2.z64 rom to Ghidra and wasted a boatload of time trying to figure out how to sync Ares emulator with it and track the execution to the password generation function. That didn't work out, so I just dumped the full decompilation and fed it to Gemini, asking it to find the logic, which it did.
+I loaded the Quake2.z64 rom to Ghidra and wasted a lot of time trying to figure out how to sync Ares emulator with it and track the execution to the password generation function. That didn't work out, so I just dumped the full decompilation and fed it to Gemini, asking it to find the logic, which it did.
 
 I also did a lot of black box testing by generating valid codes for specific scenarios by playing the game, which could then be used to both validate the Gemini-generated decryption code and to align it with the game's actual behavior.
 

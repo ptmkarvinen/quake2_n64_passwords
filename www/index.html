@@ -76,7 +76,7 @@
                 <div class="control-group">
                     <div class="row">
                         <div class="field">
-                            <label for="level">Map/Level</label>
+                            <label for="level">Level</label>
                             <select id="level">
                                 <option value="-6">0: Twists (Secret Level)</option>
                                 <option value="1" selected>1: Strogg Outpost</option>
@@ -317,13 +317,13 @@
                 <section>
                     <h3>How Password Encoding & Decryption Works</h3>
                     <p>
-                        Under the hood, Quake II 64 packs player inventory and mission status into an <strong>80-bit binary payload</strong> (10 bytes). The payload structure compresses multiple game variables into specific bit fields:
+                        Quake II 64 packs player inventory and mission status into an <strong>80-bit binary payload</strong> (10 bytes). Values are mapped into the following bit fields:
                     </p>
                     <table class="payload-table">
                         <thead>
                             <tr>
                                 <th>Bits</th>
-                                <th>Field</th>
+                                <th>Data</th>
                             </tr>
                         </thead>
                         <tbody>
