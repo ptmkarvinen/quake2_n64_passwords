@@ -716,6 +716,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    const elCopyrightBrand = document.getElementById("copyright-brand");
+    if (elCopyrightBrand) {
+        const savedTheme = localStorage.getItem("q2_theme");
+        if (savedTheme === "red") {
+            document.documentElement.setAttribute("data-theme", "red");
+        }
+
+        elCopyrightBrand.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "red" ? "blue" : "red";
+            if (newTheme === "red") {
+                document.documentElement.setAttribute("data-theme", "red");
+            } else {
+                document.documentElement.removeAttribute("data-theme");
+            }
+            localStorage.setItem("q2_theme", newTheme);
+        });
+    }
+
     // Initialize state
     updateAmmoSlidersLimit();
     updateHealthLimits();
