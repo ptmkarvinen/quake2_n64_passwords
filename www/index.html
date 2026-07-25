@@ -293,7 +293,118 @@
                         </div>
                     </div>
                 </div>
+            </section>
         </main>
+
+        <!-- Technical Overview & System Documentation -->
+        <article class="info-card card">
+            <div class="card-header">
+                <h2>TECHNICAL OVERVIEW & SYSTEM DOCUMENTATION</h2>
+            </div>
+            <div class="info-content">
+                <section>
+                    <h3>What is Quake II N64 Passcode Enryption System?</h3>
+                    <p>
+                        Quake II on the N64 uses a password system which encodes values such as level
+                        number, health and a list of weapons into a 16 digit password.
+                    </p>
+                    <p>
+                        This generator allows you to customize those values to your liking and generate a functional
+                        password, which enables all kinds of fun (and less fun) play opportunies. The only
+                        reason it exists is because there was no way to do "shotgun start" in Quake II and
+                        I wanted to give that a go.
+                    </p>
+                </section>
+
+                <div class="divider"></div>
+
+                <section>
+                    <h3>How Password Encoding & Decryption Works</h3>
+                    <p>
+                        Under the hood, Quake II 64 packs player inventory and mission status into an
+                        <strong>80-bit binary payload</strong> (10 bytes). The payload structure compresses multiple
+                        game variables into specific bit fields:
+                    </p>
+                    <table class="payload-table">
+                        <thead>
+                            <tr>
+                                <th>Bits</th>
+                                <th>Field</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="bit-range">1-5</td>
+                                <td>Level</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">6-7</td>
+                                <td>Difficulty</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">8-16</td>
+                                <td>Weapons Inventory</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">17</td>
+                                <td>Ammo Pack</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">18-24</td>
+                                <td>Health</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">25-28</td>
+                                <td>Max Health</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">29-30</td>
+                                <td>Armor Type</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">31-36</td>
+                                <td>Armor</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">37</td>
+                                <td class="text-dim">--</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">38-70</td>
+                                <td>Ammo</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">71-72</td>
+                                <td class="text-dim">--</td>
+                            </tr>
+                            <tr>
+                                <td class="bit-range">73-80</td>
+                                <td>Checksum</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>
+                        Before rendering the 16-character password, the 10-byte payload undergoes a scramble followed by checksum validation. Decryption reverses the process to reconstruct the payload.
+                    </p>
+                </section>
+
+                <div class="divider"></div>
+
+                <section>
+                    <h3>Reverse Engineering & Credits</h3>
+                    <p>
+                        The password logic was reverse engineered by dumping the ROM using <a
+                            href="https://github.com/nationalsecurityagency/ghidra" target="_blank"
+                            rel="noopener">Ghidra</a> for analysis and performing extensive empirical black-box testing.
+                    </p>
+                    <p>
+                        This project and its source code are open source under the MIT License on <a
+                            href="https://github.com/ptmkarvinen/quake2_n64_passwords" target="_blank"
+                            rel="noopener">GitHub</a>.
+                    </p>
+                </section>
+            </div>
+        </article>
 
         <footer>
             <p>&copy; 2026 ZX497</p>
@@ -302,6 +413,5 @@
 
     <script src="app.js"></script>
 </body>
-
 
 </html>
