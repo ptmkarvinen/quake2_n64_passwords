@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://quake2.zx497.com/sitemap.xml
