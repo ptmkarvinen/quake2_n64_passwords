@@ -30,7 +30,7 @@ const CONFIG = {
         slugs: 0
     },
     armor: 250,                 // 0 to 250
-    armorType: "jacket",        // "body", "combat", "jacket"
+    armorType: "body",          // "body", "combat", "jacket"
     currentHealth: 115,       // 1 to 115
     maxHealth: 115            // 100 to 115
 };
@@ -155,40 +155,47 @@ function generatePassword(config) {
         health = maxHealth;
     }
 
-    // Determine armor type first to clamp armor value correctly
+    // Determine armor type
     let armorType = 0;
     let armor = config.armor || 0;
 
-    if (armor > 0) {
-        const typeOverride = (config.armorType || "").toLowerCase();
-        if (typeOverride === "body" || typeOverride === "body_armor" || typeOverride === "body armor") {
-            armorType = 3;
-        } else if (typeOverride === "combat" || typeOverride === "combat_armor" || typeOverride === "combat armor") {
-            armorType = 2;
-        } else if (typeOverride === "jacket" || typeOverride === "jacket_armor" || typeOverride === "jacket armor") {
-            armorType = 1;
-        } else {
-            // Auto-detect based on armor value
-            if (armor > 150) armorType = 1;      // Jacket Armor (up to 250)
-            else if (armor > 100) armorType = 2; // Combat Armor (up to 150)
-            else armorType = 3;                  // Body Armor (up to 100)
-        }
+    const typeOverride = (config.armorType || "").toLowerCase();
+    if (typeOverride === "body" || typeOverride === "body_armor" || typeOverride === "body armor") {
+        armorType = 3;
+    } else if (typeOverride === "combat" || typeOverride === "combat_armor" || typeOverride === "combat armor") {
+        armorType = 2;
+    } else if (typeOverride === "jacket" || typeOverride === "jacket_armor" || typeOverride === "jacket armor") {
+        armorType = 1;
+    } else if (typeOverride === "none") {
+        armorType = 0;
+    } else {
+        // Auto-detect based on armor value
+        if (armor > 150) armorType = 3;      // Body Armor (up to 250)
+        else if (armor > 100) armorType = 2; // Combat Armor (up to 150)
+        else if (armor > 0) armorType = 1;   // Jacket Armor (up to 100)
+        else armorType = 0;
+    }
 
-        // Clamp armor based on armor type limits
-        let maxArmorLimit = 250;
-        let armorName = "Jacket";
-        if (armorType === 3) {
-            maxArmorLimit = 100;
-            armorName = "Body";
-        } else if (armorType === 2) {
-            maxArmorLimit = 150;
-            armorName = "Combat";
-        }
+    // Clamp armor based on armor type limits
+    let maxArmorLimit = 250;
+    let armorName = "Body";
+    if (armorType === 1) {
+        maxArmorLimit = 100;
+        armorName = "Jacket";
+    } else if (armorType === 2) {
+        maxArmorLimit = 150;
+        armorName = "Combat";
+    } else if (armorType === 3) {
+        maxArmorLimit = 250;
+        armorName = "Body";
+    } else {
+        maxArmorLimit = 0;
+        armorName = "None";
+    }
 
-        if (armor > maxArmorLimit) {
-            console.warn(`[Warning] Armor ${armor} exceeds maximum limit for ${armorName} Armor (${maxArmorLimit}). Clamped to ${maxArmorLimit}.`);
-            armor = maxArmorLimit;
-        }
+    if (armor > maxArmorLimit) {
+        console.warn(`[Warning] Armor ${armor} exceeds maximum limit for ${armorName} Armor (${maxArmorLimit}). Clamped to ${maxArmorLimit}.`);
+        armor = maxArmorLimit;
     }
 
     // 1. Level Index (0..4): level + 9
